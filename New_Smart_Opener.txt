@@ -1,0 +1,51 @@
+@name New Smart Opener
+@outputs Out
+@persist Whitelist:table Distance
+
+if(first()){
+    runOnChat(1)
+    Whitelist = table()
+    Whitelist[owner():steamID(),number]=1
+    timer("check", 0)
+    Distance = 2500
+    hideChat(1)
+}
+elseif(chatClk(owner())){
+    local LS = lastSaid():explode(" ")
+    if(LS[1,string]==".add"){
+        local Target = findPlayerByName(LS[2,string])
+         if(Target:isPlayer()) {
+            Whitelist[Target:steamID(),number]=1
+            hideChat(1)            
+            print("Added Player : " + Target:name() + ", SteamID: "+Target:steamID())
+        }
+        else { print("No matching player found!") }
+    }
+    elseif(LS[1,string]==".remove"){
+        local Target = findPlayerByName(LS[2,string])
+         if(Target:isPlayer()) {
+            Whitelist[Target:steamID(),number]=0
+            hideChat(1)            
+            print("Removed Player : " + Target:name() + ", SteamID: "+Target:steamID())
+        }
+        else { print("No matching player found!") }
+    }
+    elseif(LS[1,string]==".distance"){
+        Distance = LS[2,string]:toNumber(10)
+        hideChat(1)        
+        print("Distance changed to : " + LS[2,string])
+    }
+}
+elseif(clk("check")){
+    local EPos = entity():pos()
+    Out = 0
+    foreach(N,Ply:entity=players()){
+        local Ppos = Ply:pos()
+        if(Whitelist[Ply:steamID(),number]&Ppos:distance2(EPos)<Distance)
+        {
+            Out = 1
+            break
+        }
+    }
+    timer("check", 300)
+}
